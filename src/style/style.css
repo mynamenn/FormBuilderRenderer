@@ -7,9 +7,9 @@ input{
     box-sizing: border-box;
 }
 
-::-webkit-input-placeholder {
+input, input[placeholder] {
     text-align: center;
- }
+}
 
 button[type=submit] {
     width: 100%;

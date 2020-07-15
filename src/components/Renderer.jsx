@@ -1,7 +1,39 @@
 import React from 'react';
 import '../style/style.css';
 
+
+
 export default function Renderer({ task, Regex, taskId, bankList }) {
+    const loadBanks = (Id) => {
+
+        var method = "00";
+        var msgToken = "01";
+        var xmlhttp = new XMLHttpRequest();
+        var url = "https://demo.curlec.com/curlec-services/banks?method=" + method + "&msgToken=" + msgToken;
+        var bankList = [];
+        var options = [];
+        var selectBox = document.getElementById(Id);
+        xmlhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var myArr = JSON.parse(this.responseText);
+                if (myArr.Status == 201) {
+                    bankList = myArr.Response[0];
+                    options = bankList;
+                    if (selectBox && selectBox.options.length < 2) {
+                        for (var i = 0, l = options.length; i < l; i++) {
+                            var option = options[i];
+                            if (selectBox !== null) {
+                                selectBox.options.add(new Option(option.display_name, option.code));
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        xmlhttp.open("POST", url, true);
+        xmlhttp.send();
+    }
+
 
     const combineId = (Id) => {
         return 'alert' + Id;
@@ -9,16 +41,23 @@ export default function Renderer({ task, Regex, taskId, bankList }) {
 
     const updateVal = (type, Id, e) => {
         var val = document.getElementById(Id).value;
-        console.log(val);
         var reg = new RegExp(Regex[type]);
         var alertId = combineId(Id);
 
         if (reg.test(val)) {
             document.getElementById(alertId).innerHTML = '';
-            return true;
         } else {
             document.getElementById(alertId).innerHTML = 'Invalid ' + Id + '.';
-            return true;
+        }
+    }
+
+    const checkList = (Id, e) => {
+        var val = document.getElementById(Id).value;
+        var alertId = combineId(Id);
+        if (val) {
+            document.getElementById(alertId).innerHTML = '';
+        } else {
+            document.getElementById(alertId).innerHTML = 'Invalid ' + Id + '.';
         }
     }
 
@@ -32,7 +71,7 @@ export default function Renderer({ task, Regex, taskId, bankList }) {
                     onChange={updateVal.bind(this, task.type, task.content)}
                     placeholder={`Please enter your ${task.content.toLowerCase()}`} />
                 <br />
-                <span id={combineId(task.content)} class="errorSpan"></span>
+                <span id={combineId(task.content)} className="errorSpan"></span>
             </div>
         )
     } else if (task.inputField === 'Checkbox') {
@@ -63,14 +102,16 @@ export default function Renderer({ task, Regex, taskId, bankList }) {
             <div>
                 <label htmlFor={task.content}>{task.content}</label>
                 <br />
-                <select id={task.content} name={task.content} required>
-                    {bankList.map((bankName) =>
-                        <option value={bankName}>{bankName}</option>
-                    )}
+                <select id={task.content} name={task.content} required
+                    onChange={checkList.bind(this, task.content)}>
+                    <option value="">--Please Select Bank--</option>
                 </select>
                 <br />
+                <span id={combineId(task.content)} className="errorSpan"></span>
                 <br />
+                <script type="text/javascript">{document.onload = loadBanks(task.content)}</script>
             </div>
+
         )
     }
 

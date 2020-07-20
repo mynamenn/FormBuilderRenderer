@@ -7,7 +7,8 @@ var link = "";
 var formType = "";
 class MainPage extends React.Component {
     state = {
-        newForm: {},
+        savedForms: [],
+        formName: "",
         tasks: {},
         taskIds: [],
         Regex: {},
@@ -16,21 +17,23 @@ class MainPage extends React.Component {
 
     handleGetData = (form) => {
         axios
-            .get('/DemoApp/add')
+            .get('http://localhost:8080/DemoApp/add')
             .then(response => {
-                this.setState({ newForm: response.data['newForm'] });
-                this.setState({ tasks: response.data['tasks'] });
+                console.log(response.data);
+                this.setState({ savedForms: response.data });
+                this.setState({ formName: Object.keys(this.state.savedForms[0]['newForm']) })
+                this.setState({ tasks: this.state.savedForms[0]['newForm'][this.state.formName]['tasks'] })
                 this.setState({
                     taskIds:
-                        this.state.newForm[Object.keys(this.state.newForm)]['taskIds']
+                        this.state.savedForms[0]['newForm'][Object.keys(this.state.savedForms[0]['newForm'])]['taskIds']
                 });
-                this.setState({ bankList: response.data['bankList'] });
-                this.setState({ Regex: response.data['Regex'] })
+                this.setState({ bankList: response.data[0]['bankList'] });
+                this.setState({ Regex: response.data[0]['Regex'] })
+                console.log(this.state)
             })
             .catch(error => {
                 console.log(error)
             })
-
         if (form === "Instant") {
             document.getElementById('submitInstant').style.display = "block";
             document.getElementById('submitMandate').style.display = "none";
@@ -168,17 +171,18 @@ class MainPage extends React.Component {
                 var idType = document.getElementById('Id Type').value;
                 var idValue = 88585858599;
                 var bankId = document.getElementById('Bank List').value;
-                var method = "00";
+                var method = "03";
                 var merchantId = "1";
                 var employeeId = "2";
                 var effectiveDate = "2020-07-15";
+                var referenceNumber = "TTccc0001";
 
                 link = url + "frequency=" + frequency + "&amount=" + amount
                     + "&maximumFrequency=" + maximumFrequency + "&purposeOfPayment=" + purposeOfPayment
                     + "&businessModel=" + businessModel + "&name=" + name + "&method=" + method
                     + "&emailAddress=" + emailAddress + "&idType=" + idType
                     + "&idValue=" + idValue + "&bankId=" + bankId
-                    + "&merchantId=" + merchantId + "&employeeId=" + employeeId + "&effectiveDate=" + effectiveDate;
+                    + "&merchantId=" + merchantId + "&employeeId=" + employeeId + "&effectiveDate=" + effectiveDate + "&referenceNumber=" + referenceNumber;
 
                 window.location.href = link;
             }
@@ -188,13 +192,31 @@ class MainPage extends React.Component {
         }
     }
 
+    handleUpdateForm = (data) => {
+        var datas = data.split('|');
+        var formName = datas[0];
+        var index = datas[1];
+        this.setState({ formName: formName });
+        this.setState({ tasks: this.state.savedForms[index]['newForm'][formName]['tasks'] })
+        this.setState({ taskIds: this.state.savedForms[index]['newForm'][formName]['taskIds'] })
+    }
+
     render() {
 
         return (
             <div>
+                <label htmlFor="savedForms">Saved Forms</label>
+                <br />
+                <select id="savedForms" required
+                    onChange={() => this.handleUpdateForm(document.getElementById('savedForms').value)}>
+                    {this.state.savedForms.map((form, index) =>
+                        <option value={Object.keys(form['newForm']) + '|' + index}>{Object.keys(form['newForm'])}</option>
+                    )}
+                </select>
+                <br />
                 <button onClick={() => this.handleGetData("Instant")}>Render Instant Pay Form</button>
                 <button onClick={() => this.handleGetData("Mandate")}>Render Mandate Form</button>
-                <h1>{Object.keys(this.state.newForm)}</h1>
+                <h1>{this.state.formName}</h1>
                 <form name="signUp">
                     {this.state.taskIds.map(taskId => (
                         <Renderer key={this.state.tasks[taskId]['content']} id={this.state.tasks[taskId]['content']}

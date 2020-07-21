@@ -13,27 +13,55 @@ class MainPage extends React.Component {
         taskIds: [],
         Regex: {},
         bankList: [],
+        currIndex: 0,
+        currForm: {}
     };
 
+    componentDidMount = () => {
+        this.handleGetData("Mandate");
+    }
+
     handleGetData = (form) => {
+        // Get query string with parameter formName
+        let search = window.location.search;
+        let params = new URLSearchParams(search);
+        let formName = params.get('formName');
+
+        // If formName is empty, it is admin mode
+        // Else, find form with formName
         axios
-            .get('http://localhost:8080/DemoApp/add')
+            .get('http://localhost:8080/DemoApp/add', {
+                params: {
+                    formName: formName
+                }
+            })
             .then(response => {
-                console.log(response.data);
-                this.setState({ savedForms: response.data });
-                this.setState({ formName: Object.keys(this.state.savedForms[0]['newForm']) })
-                this.setState({ tasks: this.state.savedForms[0]['newForm'][this.state.formName]['tasks'] })
+                // If user wants a specific form
+                if (formName != null) {
+                    var splitted = response.data.split("\n");   // [savedForms, query string]
+                    this.setState({ savedForms: JSON.parse(splitted[0]) });
+                    this.state.savedForms.map((form, index) => {
+                        if (Object.keys(form['newForm'])[0] === formName) {
+                            this.setState({ currIndex: index });
+                        }
+                    })
+                } else {
+                    this.setState({ savedForms: response.data });
+                }
+                this.setState({ currForm: this.state.savedForms[this.state.currIndex] })
+                this.setState({ formName: Object.keys(this.state.currForm['newForm']) })
+                this.setState({ tasks: this.state.currForm['newForm'][this.state.formName]['tasks'] })
                 this.setState({
                     taskIds:
-                        this.state.savedForms[0]['newForm'][Object.keys(this.state.savedForms[0]['newForm'])]['taskIds']
+                        this.state.currForm['newForm'][Object.keys(this.state.currForm['newForm'])]['taskIds']
                 });
-                this.setState({ bankList: response.data[0]['bankList'] });
-                this.setState({ Regex: response.data[0]['Regex'] })
-                console.log(this.state)
+                this.setState({ bankList: this.state.currForm['bankList'] });
+                this.setState({ Regex: this.state.currForm['Regex'] })
             })
             .catch(error => {
                 console.log(error)
             })
+
         if (form === "Instant") {
             document.getElementById('submitInstant').style.display = "block";
             document.getElementById('submitMandate').style.display = "none";
@@ -43,7 +71,6 @@ class MainPage extends React.Component {
             document.getElementById('submitInstant').style.display = "none";
             formType = form;
         }
-
 
     }
 

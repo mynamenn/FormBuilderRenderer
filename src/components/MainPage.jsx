@@ -4,7 +4,6 @@ import Renderer from './Renderer';
 import '../style/style.css';
 
 var link = "";
-var formType = "";
 class MainPage extends React.Component {
     state = {
         savedForms: [],
@@ -14,64 +13,73 @@ class MainPage extends React.Component {
         Regex: {},
         bankList: [],
         currIndex: 0,
-        currForm: {}
+        currForm: {},
+        formType: "",
+        companyName: "",
     };
 
     componentDidMount = () => {
-        this.handleGetData("Mandate");
+        this.handleGetData();
     }
 
-    handleGetData = (form) => {
+    handleGetData = () => {
         // Get query string with parameter formName
-        let search = window.location.search;
-        let params = new URLSearchParams(search);
-        let formName = params.get('formName');
+        let link = window.location.href.split('/');
+        console.log("LINK ", link)
+        let formName = link[6];
+        let typeOfForm = link[5];
+        let companyName = link[4];
+        let servletName = link[3];
+        var axiosLink = 'http://localhost:8080/DemoApp/' + servletName;
 
         // If formName is empty, it is admin mode
         // Else, find form with formName
         axios
-            .get('http://localhost:8080/DemoApp/add', {
+            .get(axiosLink, {
                 params: {
-                    formName: formName
+                    companyName: companyName,
+                    typeOfForm: typeOfForm,
+                    formName: formName,
                 }
             })
             .then(response => {
                 // If user wants a specific form
                 if (formName != null) {
-                    var splitted = response.data.split("\n");   // [savedForms, query string]
+                    var splitted = response.data.split("\n");   // [savedForms, ...]
                     this.setState({ savedForms: JSON.parse(splitted[0]) });
                     this.state.savedForms.map((form, index) => {
-                        if (Object.keys(form['newForm'])[0] === formName) {
+                        if (Object.keys(form['newForm'])[0].toLowerCase() === formName.toLowerCase()) {
                             this.setState({ currIndex: index });
                         }
                     })
                 } else {
                     this.setState({ savedForms: response.data });
                 }
-                this.setState({ currForm: this.state.savedForms[this.state.currIndex] })
-                this.setState({ formName: Object.keys(this.state.currForm['newForm']) })
-                this.setState({ tasks: this.state.currForm['newForm'][this.state.formName]['tasks'] })
+                this.setState({ formType: typeOfForm });
+                this.setState({ companyName: companyName });
+                this.setState({ currForm: this.state.savedForms[this.state.currIndex] });
+                this.setState({ formName: Object.keys(this.state.currForm['newForm']) });
+                this.setState({ tasks: this.state.currForm['newForm'][this.state.formName]['tasks'] });
                 this.setState({
                     taskIds:
                         this.state.currForm['newForm'][Object.keys(this.state.currForm['newForm'])]['taskIds']
                 });
                 this.setState({ bankList: this.state.currForm['bankList'] });
-                this.setState({ Regex: this.state.currForm['Regex'] })
+                this.setState({ Regex: this.state.currForm['Regex'] });
+
+                if (this.state.formType.toLowerCase() === "instant") {
+                    console.log("INSTANT")
+                    document.getElementById('submitInstant').style.display = "block";
+                    document.getElementById('submitMandate').style.display = "none";
+                } else if (this.state.formType.toLowerCase() === "mandate") {
+                    console.log("MANDATE")
+                    document.getElementById('submitMandate').style.display = "block";
+                    document.getElementById('submitInstant').style.display = "none";
+                }
             })
             .catch(error => {
-                console.log(error)
+                console.log(error);
             })
-
-        if (form === "Instant") {
-            document.getElementById('submitInstant').style.display = "block";
-            document.getElementById('submitMandate').style.display = "none";
-            formType = form;
-        } else {
-            document.getElementById('submitMandate').style.display = "block";
-            document.getElementById('submitInstant').style.display = "none";
-            formType = form;
-        }
-
     }
 
     handleSubmitInstant = (e) => {
@@ -164,7 +172,7 @@ class MainPage extends React.Component {
         var missingFields = false;
         var errMsg = "Please add ";
         var mandatoryInstantFields = ['Amount', 'Bank List', 'Frequency', 'Maximum Frequency',
-            'Purpose Of Payment', 'Business Model', 'Name', 'Email', 'Id Type'];
+            'Purpose Of Payment', 'Business Model', 'Name', 'Email', 'ID Type'];
         mandatoryInstantFields.map(field => {
             if (document.getElementById(field) === null) {
                 missingFields = true;
@@ -195,7 +203,7 @@ class MainPage extends React.Component {
                 var businessModel = document.getElementById('Business Model').value;
                 var name = document.getElementById('Name').value;
                 var emailAddress = document.getElementById('Email').value;
-                var idType = document.getElementById('Id Type').value;
+                var idType = document.getElementById('ID Type').value;
                 var idValue = 88585858599;
                 var bankId = document.getElementById('Bank List').value;
                 var method = "03";
@@ -243,17 +251,19 @@ class MainPage extends React.Component {
                 <br />
                 <button onClick={() => this.handleGetData("Instant")}>Render Instant Pay Form</button>
                 <button onClick={() => this.handleGetData("Mandate")}>Render Mandate Form</button>
-                <h1>{this.state.formName}</h1>
+                <br />
+                <br />
                 <form name="signUp">
+                    <h2 className="form-title">{this.state.formName}</h2>
                     {this.state.taskIds.map(taskId => (
                         <Renderer key={this.state.tasks[taskId]['content']} id={this.state.tasks[taskId]['content']}
                             taskId={taskId} Regex={this.state.Regex} task={this.state.tasks[taskId]} bankList={this.state.bankList}
-                            formType={formType}></Renderer>
+                            formType={this.state.formType}></Renderer>
                     ))}
                     <br />
                     <span id="alertMissing" className="errorSpan"></span>
-                    <button id="submitInstant" onClick={this.handleSubmitInstant}>Submit</button>
-                    <button id="submitMandate" onClick={this.handleSubmitMandate}>Submit</button>
+                    <button id="submitInstant" className="submit" onClick={this.handleSubmitInstant}>Submit</button>
+                    <button id="submitMandate" className="submit" onClick={this.handleSubmitMandate}>Submit</button>
                 </form>
             </div >
         );

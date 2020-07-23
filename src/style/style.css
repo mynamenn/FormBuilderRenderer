@@ -1,5 +1,6 @@
 input{
     width: 100%;
+    height: 40px;
     margin: 8px 0;
     display: inline-block;
     border: 1px solid #ccc;
@@ -7,8 +8,17 @@ input{
     box-sizing: border-box;
 }
 
-input, input[placeholder] {
-    text-align: center;
+input, input[placeholder], .fieldSelectBox {
+    text-align: left;
+    padding: 10px;
+    font-size: 14px;
+    width: 100%;
+    border: none;
+    border-bottom: 0.5px solid gray;
+}
+
+.fieldSelectBox:hover{
+    background-color: lightblue;
 }
 
 button[type=submit] {
@@ -20,22 +30,48 @@ button[type=submit] {
     cursor: pointer;
 }
 
-.errorSpan {
-    color: red;
-}
-
 form {
+    width: 60%;
     border-radius: 5px;
     margin-left: auto;
     margin-right: auto;
-    padding: 10px 25px 50px 25px;
+    padding: 20px 55px 50px 55px;
     box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
-    text-align: center;
+    text-align: left;
+    background-color: white;
+}
+
+.submit{
+    width: 100%;
+    color: darkblue;
+    font-size: medium;
+    font-weight: 700;
+    padding: 10px;
+    border: none;
+    background-color: orange;
+}
+
+.submit:hover {
+    background-color: darkorange;
+  }
+
+.item-title{
+    font-size: small;
+    font-weight: 645;
+    color: gray;
+}
+
+.errorSpan {
+    color: red;
 }
 
 .sideBySide{
 	display: inline-block;
 	width: 49%;
+}
+
+.form-title{
+    color: purple;
 }
 
 #submitInstant{
@@ -48,5 +84,17 @@ form {
     display: none;
     margin-left: auto;
     margin-right: auto;
+}
+
+#savedForms{
+    border: black;
+    text-align: center;
+    font-size: medium;
+    background-color: lightgrey;
+    width: 30%;
+}
+
+#savedForms:hover{
+    background-color: lightblue;
 }
 

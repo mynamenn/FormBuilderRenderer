@@ -68,15 +68,14 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
     if (task.inputField === 'TextField') {
         return (
             <div key={taskId}>
-                <label htmlFor={task.content}>{task.content}</label>
+                {/* <label htmlFor={task.content} className="item-title">{task.content}*</label> */}
                 <br />
                 <input type="text" id={task.content} name={task.content}
                     pattern={Regex[task.type]} required
                     onChange={updateVal.bind(this, task.type, task.content)}
-                    placeholder={`Please enter your ${task.content.toLowerCase()}`} />
+                    placeholder={`${task.content}*`} />
                 <br />
                 <span id={combineId(task.content)} className="errorSpan"></span>
-                <br />
             </div>
         )
     } else if (task.inputField === 'Checkbox') {
@@ -85,35 +84,32 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
                 <input type="checkbox" id={task.content} value="checkboxVal" />
                 <label htmlFor={task.content} className='item-title' >{task.content}</label>
                 <br />
-                <br />
             </div>
         )
     } else if (task.inputField === 'DropDownList') {
         return (
             <div>
-                <label htmlFor={task.content}>{task.content}</label>
+                {/* <label htmlFor={task.content} className='item-title'>{task.content}*</label> */}
                 <br />
-                <select id={task.content} name={task.content} required>
+                <select id={task.content} name={task.content} className="fieldSelectBox" required>
                     {task.listValues.map((value) =>
                         <option value={value}>{value}</option>
                     )}
                 </select>
-                <br />
                 <br />
             </div>
         )
     } else if (task.inputField === 'BankList') {
         return (
             <div>
-                <label htmlFor={task.content}>{task.content}</label>
+                {/* <label htmlFor={task.content} className='item-title'>{task.content}*</label> */}
                 <br />
-                <select id={task.content} name={task.content} required
+                <select id={task.content} name={task.content} className="fieldSelectBox" required
                     onChange={checkList.bind(this, task.content)}>
-                    <option value="">--Please Select Bank--</option>
+                    <option value="">Bank Name*</option>
                 </select>
                 <br />
                 <span id={combineId(task.content)} className="errorSpan"></span>
-                <br />
                 <script type="text/javascript">{document.onload = loadBanks(task.content)}</script>
             </div>
 
@@ -121,15 +117,15 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
     } else if (task.inputField === 'Frequency') {
         return (
             <div>
-                <label htmlFor={task.content}>{task.content}</label>
                 <br />
-                <select id={task.content} name={task.content} required>
+                <label htmlFor={task.content} className='item-title'>{task.content}*</label>
+                <br />
+                <select id={task.content} name={task.content} className="fieldSelectBox" required>
                     <option value="YEARLY">YEARLY</option>
                     <option value="MONTHLY" defaultValue>MONTHLY</option>
                     <option value="WEEKLY">WEEKLY</option>
                     <option value="DAILY">DAILY</option>
                 </select>
-                <br />
                 <br />
             </div>
 
@@ -137,13 +133,13 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
     } else if (task.inputField === 'BusinessModel') {
         return (
             <div>
-                <label htmlFor={task.content}>{task.content}</label>
                 <br />
-                <select id={task.content} name={task.content} required>
+                <label htmlFor={task.content} className='item-title'>{task.content}*</label>
+                <br />
+                <select id={task.content} name={task.content} className="fieldSelectBox" required>
                     <option value="B2C" defaultValue>B2C</option>
                     <option value="B2B1">B2B1</option>
                 </select>
-                <br />
                 <br />
             </div>
 
@@ -151,10 +147,10 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
     } else if (task.inputField === 'Date') {
         return (
             <div>
-                <label htmlFor={task.content}>{task.content}</label>
+                <br />
+                <label htmlFor={task.content} className='item-title'>{task.content}*</label>
                 <br />
                 <input type="date" id={task.content} />
-                <br />
                 <br />
             </div>
 
@@ -162,15 +158,15 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
     } else if (task.inputField === 'idType') {
         return (
             <div>
-                <label htmlFor={task.content}>{task.content}</label>
                 <br />
-                <select id={task.content} name={task.content} required>
+                <label htmlFor={task.content} className='item-title'>{task.content}*</label>
+                <br />
+                <select id={task.content} name={task.content} className="fieldSelectBox" required>
                     <option value="PASSPORT_NUMBER" selected>Passport Number</option>
                     <option value="NRIC">NRIC</option>
                     <option value="BUSINESS_REGISTRATION_NUMBER">Business Registration Number</option>
                     <option value="OTHERS">Others</option>
                 </select>
-                <br />
                 <br />
             </div>
 

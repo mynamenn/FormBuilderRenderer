@@ -43,12 +43,12 @@ form {
 
 .submit{
     width: 100%;
-    color: darkblue;
+    color: white;
     font-size: medium;
     font-weight: 700;
     padding: 10px;
     border: none;
-    background-color: orange;
+    background-color: #673BB7;
 }
 
 .submit:hover {
@@ -59,6 +59,11 @@ form {
     font-size: small;
     font-weight: 645;
     color: gray;
+}
+
+.checkbox{
+    width: 15px;
+    height: 15px
 }
 
 .errorSpan {
@@ -98,3 +103,13 @@ form {
     background-color: lightblue;
 }
 
+#linkId{
+    width: 35%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  text-align: center;
+}

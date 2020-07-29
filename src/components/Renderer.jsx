@@ -2,8 +2,7 @@ import React from 'react';
 import '../style/style.css';
 
 
-
-export default function Renderer({ task, Regex, taskId, bankList, formType }) {
+export default function Renderer({ task, Regex, taskId, formType }) {
     const loadBanks = (Id) => {
         var method = "00";
         var msgToken = "01";
@@ -13,9 +12,9 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
         var options = [];
         var selectBox = document.getElementById(Id);
         xmlhttp.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
+            if (this.readyState === 4 && this.status === 200) {
                 var myArr = JSON.parse(this.responseText);
-                if (myArr.Status == 201) {
+                if (myArr.Status[0] === "201") {
                     bankList = myArr.Response[0];
                     options = bankList;
                     if (selectBox && selectBox.options.length < 2) {
@@ -27,10 +26,14 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
                                 } else {
                                     selectBox.options.add(new Option(option.display_name, option.id));
                                 }
-
                             }
                         }
                     }
+                } else if (myArr.Status === 409 && myArr.Message[0] === "Paynet servers are currently under maintenance.  Please try again shortly.") {
+                    if (document.getElementById(combineId(Id))) {
+                        document.getElementById(combineId(Id)).innerHTML = "Paynet servers are currently under maintenance.  Please try again shortly.";
+                    }
+
                 }
             }
         };
@@ -57,6 +60,7 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
 
     const checkList = (Id, e) => {
         var val = document.getElementById(Id).value;
+        console.log(val)
         var alertId = combineId(Id);
         if (val) {
             document.getElementById(alertId).innerHTML = '';
@@ -81,7 +85,8 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
     } else if (task.inputField === 'Checkbox') {
         return (
             <div>
-                <input type="checkbox" id={task.content} value="checkboxVal" />
+                <input type="checkbox" id={task.content} value="checkboxVal" className="checkbox" />
+                &ensp;
                 <label htmlFor={task.content} className='item-title' >{task.content}</label>
                 <br />
             </div>
@@ -110,7 +115,11 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
                 </select>
                 <br />
                 <span id={combineId(task.content)} className="errorSpan"></span>
-                <script type="text/javascript">{document.onload = loadBanks(task.content)}</script>
+                <script type="text/javascript">
+                    {
+                        (formType != "") ?
+                            loadBanks(task.content) : null
+                    }</script>
             </div>
 
         )
@@ -162,7 +171,7 @@ export default function Renderer({ task, Regex, taskId, bankList, formType }) {
                 <label htmlFor={task.content} className='item-title'>{task.content}*</label>
                 <br />
                 <select id={task.content} name={task.content} className="fieldSelectBox" required>
-                    <option value="PASSPORT_NUMBER" selected>Passport Number</option>
+                    <option value="PASSPORT_NUMBER" defaultValue>Passport Number</option>
                     <option value="NRIC">NRIC</option>
                     <option value="BUSINESS_REGISTRATION_NUMBER">Business Registration Number</option>
                     <option value="OTHERS">Others</option>

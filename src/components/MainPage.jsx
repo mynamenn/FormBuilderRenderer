@@ -3,6 +3,7 @@ import axios from 'axios';
 import Renderer from './Renderer';
 import '../style/style.css';
 import CopyLink from './CopyLink';
+import PublishForm from './PublishForm';
 
 const admin = "admin";
 class MainPage extends React.Component {
@@ -41,10 +42,6 @@ class MainPage extends React.Component {
             let companyName = link[4];
             let servletName = link[3];
             var axiosLink = 'http://localhost:8080/DemoApp/' + servletName;
-            // Show saved forms when admin mode
-            if (link[6] === admin) {
-                this.setState({ adminMode: true });
-            }
 
             axios
                 .get(axiosLink, {
@@ -55,7 +52,7 @@ class MainPage extends React.Component {
                 })
                 .then(response => {
                     // If user wants a specific form
-                    if (formName != null) {
+                    if (formName != "admin" && formName != null) {
                         var splitted = response.data.split("\n");   // [savedForms, ...]
                         this.setState({ savedForms: JSON.parse(splitted[0]) });
                         this.state.savedForms.map((form, index) => {
@@ -63,26 +60,36 @@ class MainPage extends React.Component {
                                 this.setState({ currIndex: index });
                             }
                         })
-                    } else {
-                        this.setState({ savedForms: response.data });
+                    } else if (formName === "admin") {
+                        var splitted = response.data.split("\n");   // [savedForms, ...]
+                        this.setState({
+                            savedForms: JSON.parse(splitted[0]),
+                            currIndex: 0,
+                            adminMode: true
+                        });
                     }
                     this.setState({ companyName: companyName });
                     this.setState({ currForm: this.state.savedForms[this.state.currIndex] });
+                    this.setState({ bankList: this.state.currForm['bankList'] });
                     this.setState({ formName: Object.keys(this.state.currForm['newForm']) });
                     this.setState({ tasks: this.state.currForm['newForm'][this.state.formName]['tasks'] });
                     this.setState({
                         taskIds:
                             this.state.currForm['newForm'][Object.keys(this.state.currForm['newForm'])]['taskIds']
                     });
-                    this.setState({ bankList: this.state.currForm['bankList'] });
                     this.setState({ Regex: this.state.currForm['Regex'] });
                     this.setState({ image: this.state.currForm['newForm'][this.state.formName]['image'] })
-
                     this.setState({ merchantId: this.state.currForm['newForm'][this.state.formName]['merchantId'] });
                     this.setState({ employeeId: this.state.currForm['newForm'][this.state.formName]['employeeId'] });
                     this.setState({ formType: this.state.currForm['newForm'][this.state.formName]['formType'] });
-                    var fileReader = new FileReader();
+                    this.setState({ published: this.state.currForm['newForm'][this.state.formName]['published'] })
 
+                    // Build link so it appears in admin mode when first loaded
+                    link[5] = this.state.formType;
+                    link[6] = this.state.formName;
+                    this.setState({ link: link.join('/') });
+
+                    var fileReader = new FileReader();
                     fileReader.onload = function (fileLoadedEvent) {
                         var srcData = fileLoadedEvent.target.result; // <--- data: base64
                         var newImage = document.createElement('img');
@@ -135,7 +142,7 @@ class MainPage extends React.Component {
         if (missingFields === false) {
             if (validateInstant === true) {
 
-                var url = "https://demo.curlec.com/new-instant-pay?";
+                var url = (this.state.published) ? "https://youtube.com" : "https://demo.curlec.com/new-instant-pay?";
                 var description = "Instant%20Pay%20Testing";
                 var amount = document.getElementById('Amount').value;
                 var bankCode = document.getElementById('Bank List').value;
@@ -216,7 +223,7 @@ class MainPage extends React.Component {
         })
         if (missingFields === false) {
             if (validateMandate === true) {
-                var url = "https://demo.curlec.com/new-mandate?";
+                var url = (this.state.published) ? "https://youtube.com" : "https://demo.curlec.com/new-mandate?";
                 var frequency = document.getElementById("Frequency").value;
                 var maximumFrequency = document.getElementById("Maximum Frequency").value;
                 var purposeOfPayment = document.getElementById("Purpose Of Payment").value;
@@ -228,8 +235,6 @@ class MainPage extends React.Component {
                 var idValue = 88585858599;
                 var bankId = document.getElementById('Bank List').value;
                 var method = "03";
-                var merchantId = "1";
-                var employeeId = "2";
                 var effectiveDate = "2020-07-15";
                 var referenceNumber = "TTccc0001";
 
@@ -238,7 +243,7 @@ class MainPage extends React.Component {
                     + "&businessModel=" + businessModel + "&name=" + name + "&method=" + method
                     + "&emailAddress=" + emailAddress + "&idType=" + idType
                     + "&idValue=" + idValue + "&bankId=" + bankId
-                    + "&merchantId=" + merchantId + "&employeeId=" + employeeId + "&effectiveDate=" + effectiveDate + "&referenceNumber=" + referenceNumber;
+                    + "&merchantId=" + this.state.merchantId + "&employeeId=" + this.state.employeeId + "&effectiveDate=" + effectiveDate + "&referenceNumber=" + referenceNumber;
 
                 window.location.href = link;
             }
@@ -254,13 +259,16 @@ class MainPage extends React.Component {
         var index = datas[1];
         var link = window.location.href.split('/');
         link[6] = formName;
-
         this.setState({
             formName: formName,
+            currIndex: index,
             formType: this.state.savedForms[index]['newForm'][formName]['formType'],
             tasks: this.state.savedForms[index]['newForm'][formName]['tasks'],
             taskIds: this.state.savedForms[index]['newForm'][formName]['taskIds'],
-            image: this.state.savedForms[index]['newForm'][formName]['image']
+            image: this.state.savedForms[index]['newForm'][formName]['image'],
+            merchantId: this.state.savedForms[index]['newForm'][formName]['merchantId'],
+            employeeId: this.state.savedForms[index]['newForm'][formName]['employeeId'],
+            published: this.state.savedForms[index]['newForm'][formName]['published']
         }, function () {
             link[5] = this.state.savedForms[index]['newForm'][formName]['formType'];
             this.setState({ link: link.join('/') });
@@ -276,6 +284,13 @@ class MainPage extends React.Component {
             }
         }
         );
+    }
+
+    afterPublish = (savedForms) => {
+        this.setState({
+            published: true,
+            savedForms: savedForms
+        });
     }
 
     render() {
@@ -296,6 +311,8 @@ class MainPage extends React.Component {
                             <br />
                             <CopyLink link={this.state.link}></CopyLink>
                             <br />
+                            <PublishForm savedForms={this.state.savedForms} companyName={this.state.companyName}
+                                formName={this.state.formName} afterPublish={this.afterPublish} currIndex={this.state.currIndex}></PublishForm>
                         </div> :
                         null
                 }

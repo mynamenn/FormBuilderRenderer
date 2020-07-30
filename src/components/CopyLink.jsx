@@ -1,17 +1,21 @@
 import React, { useState, useRef } from 'react';
 import '../style/style.css';
 
+
+
 export default function CopyLink({ link }) {
 
     const [copySuccess, setCopySuccess] = useState("");
 
-    function copyToClipboard(e) {
+    const copyToClipboard = (e) => {
         document.getElementById("linkId").select();
         document.execCommand('copy');
         e.target.focus();
         setCopySuccess('Copied!');
         setTimeout(() => setCopySuccess(""), 2000);
     };
+
+
 
     return (
         <div>
@@ -23,6 +27,8 @@ export default function CopyLink({ link }) {
                         <br />
                         < input type="text" id="linkId" value={link}></input>
                     </div>
+
+
                 </div>
             }
 

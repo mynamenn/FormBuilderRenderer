@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import '../style/style.css';
 
 
@@ -22,10 +22,10 @@ export default function CopyLink({ link }) {
             {
                 <div>
                     <div>
-                        <button onClick={copyToClipboard}>Copy Link</button>
+                        <button onClick={copyToClipboard} className="headerBtn">Copy Link</button>
                         {copySuccess}
                         <br />
-                        < input type="text" id="linkId" value={link}></input>
+                        < input type="text" id="linkId" defaultValue={link} readOnly></input>
                     </div>
 
 

@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import '../style/style.css';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
+const axiosHead = "https://uat.curlec.com/CurlecFormBuilder/DemoApp/";
 // Accept savedForms, companyName, current formName
 // Accept a setState for savedForms and published 
 export default function CopyLink({ savedForms, companyName, formName, afterPublish, currIndex }) {
@@ -39,7 +39,8 @@ export default function CopyLink({ savedForms, companyName, formName, afterPubli
         formData.append('newForm', newFormFile);
 
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", 'http://localhost:8080/DemoApp/write', true);
+        var url = axiosHead + "write";
+        xhr.open("POST", url, true);
         xhr.send(formData);
 
         setCopySuccess("Published!");
@@ -67,7 +68,7 @@ export default function CopyLink({ savedForms, companyName, formName, afterPubli
 
     return (
         <div>
-            <button onClick={handleOpen}>Publish Form</button>
+            <button onClick={handleOpen} className="headerBtn">Publish Form</button>
             {copySuccess}
 
             <Modal show={open} onHide={handleClose}>
@@ -84,9 +85,12 @@ export default function CopyLink({ savedForms, companyName, formName, afterPubli
                     <input type="text" name="employeeId"
                         value={employeeId} onChange={handleEmployeeId} />
                     <br />
+                    <br />
+
                 </Modal.Body>
 
                 <Modal.Footer>
+                    <p id="warningMsg">*Once form is published, no changes can be made.</p>
                     <Button variant="secondary" onClick={handlePublish}>
                         Publish</Button>
                 </Modal.Footer>

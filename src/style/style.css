@@ -79,6 +79,19 @@ form {
     color: purple;
 }
 
+/* .headerBtn{
+    background-color: white;
+  border: none;
+  color: solid;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  cursor: pointer;
+  margin: 4px ;
+  width:90%
+} */
+
 #submitInstant{
     display: none;
     margin-left: auto;
@@ -112,4 +125,15 @@ form {
   border-radius: 4px;
   box-sizing: border-box;
   text-align: center;
+}
+
+#warningMsg{
+    font-size: small;
+    font-weight: bold;
+    color: red;
+}
+
+#savedFormsHeader{
+    font-size: large;
+    font-weight: bold;
 }

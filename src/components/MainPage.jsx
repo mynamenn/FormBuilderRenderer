@@ -4,8 +4,14 @@ import Renderer from './Renderer';
 import '../style/style.css';
 import CopyLink from './CopyLink';
 import PublishForm from './PublishForm';
+import Table from './Table';
+import '../style/table.css';
+import CurlecAdmin from './curlecAdmin';
 
 const admin = "admin";
+const linkLength = 9;
+const adminLength = 6;
+const axiosHead = "https://uat.curlec.com/CurlecFormBuilder/DemoApp/";
 class MainPage extends React.Component {
     state = {
         savedForms: [],
@@ -23,25 +29,34 @@ class MainPage extends React.Component {
         employeeId: "",
         adminMode: false,
         link: "",
+        curlecAdmin: false,
+        companies: [],
     };
 
     componentDidMount = () => {
         this.handleGetData();
+        this.handleGetCompanies();
     }
     handleGetData = () => {
         // Get query string with parameter formName
+        // https://uat.curlec.com/CurlecFormBuilder/formBuilder_build
+        // ['https:', '', 'uat.curlec.com', 'CurlecFormBuilder', 'renderer', 'servletName', 'companyName',
+        // 'Instant', 'formName']
         let link = window.location.href.split('/');
         // Check if link has all the parameters
-        if (link.length === 7) {
+        if (link.length === linkLength) {
             // Replace %20 in html with ACTUAL space
-            if (link[6].indexOf("%20") > 0) {
-                var formName = link[6].split("%20").join(" ");
+            if (link[linkLength - 1].indexOf("%20") > 0) {
+                var formName = link[linkLength - 1].split("%20").join(" ");
             } else {
-                var formName = link[6];
+                var formName = link[linkLength - 1];
             }
-            let companyName = link[4];
-            let servletName = link[3];
-            var axiosLink = 'http://localhost:8080/DemoApp/' + servletName;
+            let companyName = link[linkLength - 3];
+            let servletName = link[linkLength - 4].substr(1);
+            console.log("handleGetData() servletName: ", servletName)
+            console.log("handleGetData() companyName: ", companyName)
+            // https://uat.curlec.com/CurlecFormBuilder/formRenderer/renderer/Instant/curlec/formName
+            var axiosLink = axiosHead + servletName;
 
             axios
                 .get(axiosLink, {
@@ -52,7 +67,7 @@ class MainPage extends React.Component {
                 })
                 .then(response => {
                     // If user wants a specific form
-                    if (formName != "admin" && formName != null) {
+                    if (formName !== "admin" && formName !== null) {
                         var splitted = response.data.split("\n");   // [savedForms, ...]
                         this.setState({ savedForms: JSON.parse(splitted[0]) });
                         this.state.savedForms.map((form, index) => {
@@ -60,7 +75,7 @@ class MainPage extends React.Component {
                                 this.setState({ currIndex: index });
                             }
                         })
-                    } else if (formName === "admin") {
+                    } else if (formName === admin) {
                         var splitted = response.data.split("\n");   // [savedForms, ...]
                         this.setState({
                             savedForms: JSON.parse(splitted[0]),
@@ -85,9 +100,10 @@ class MainPage extends React.Component {
                     this.setState({ published: this.state.currForm['newForm'][this.state.formName]['published'] })
 
                     // Build link so it appears in admin mode when first loaded
-                    link[5] = this.state.formType;
-                    link[6] = this.state.formName;
+                    link[8] = this.state.formType;
+                    link[9] = this.state.formName;
                     this.setState({ link: link.join('/') });
+                    console.log("here: ", link.join('/'))
 
                     var fileReader = new FileReader();
                     fileReader.onload = function (fileLoadedEvent) {
@@ -109,8 +125,21 @@ class MainPage extends React.Component {
                 .catch(error => {
                     console.log(error);
                 })
+        } else if (link.length === 7 && link[6].substr(1) === "curlecAdmin") {
+            // ['https:', '', 'uat.curlec.com', 'CurlecFormBuilder', 'formRenderer', '?write', 'curlecAdmin']
+            this.setState({ curlecAdmin: true })
         }
 
+    }
+
+    handleGetCompanies = () => {
+        var axiosLink = axiosHead + "write";
+
+        axios
+            .get(axiosLink)
+            .then(response => {
+                this.setState({ companies: response.data.split(" ") })
+            })
     }
 
     handleSubmitInstant = (e) => {
@@ -142,7 +171,7 @@ class MainPage extends React.Component {
         if (missingFields === false) {
             if (validateInstant === true) {
 
-                var url = (this.state.published) ? "https://youtube.com" : "https://demo.curlec.com/new-instant-pay?";
+                var url = (this.state.published) ? "https://go.curlec.com/new-instant-pay?" : "https://demo.curlec.com/new-instant-pay?";
                 var description = "Instant%20Pay%20Testing";
                 var amount = document.getElementById('Amount').value;
                 var bankCode = document.getElementById('Bank List').value;
@@ -200,9 +229,9 @@ class MainPage extends React.Component {
         var validateMandate = true;
         var missingFields = false;
         var errMsg = "Please add ";
-        var mandatoryInstantFields = ['Amount', 'Bank List', 'Frequency', 'Maximum Frequency',
-            'Purpose Of Payment', 'Business Model', 'Name', 'Email', 'ID Type'];
-        mandatoryInstantFields.map(field => {
+        var mandatoryMandateFields = ['Amount', 'Bank List', 'Frequency', 'Maximum Frequency',
+            'Purpose Of Payment', 'Business Model', 'Name', 'Email', 'ID Type', 'Effective Dateg128'];
+        mandatoryMandateFields.map(field => {
             if (document.getElementById(field) === null) {
                 missingFields = true;
                 errMsg += field + " , ";
@@ -223,7 +252,7 @@ class MainPage extends React.Component {
         })
         if (missingFields === false) {
             if (validateMandate === true) {
-                var url = (this.state.published) ? "https://youtube.com" : "https://demo.curlec.com/new-mandate?";
+                var url = (this.state.published) ? "https://demo.curlec.com/new-mandate?" : "https://demo.curlec.com/new-mandate?";
                 var frequency = document.getElementById("Frequency").value;
                 var maximumFrequency = document.getElementById("Maximum Frequency").value;
                 var purposeOfPayment = document.getElementById("Purpose Of Payment").value;
@@ -235,15 +264,15 @@ class MainPage extends React.Component {
                 var idValue = 88585858599;
                 var bankId = document.getElementById('Bank List').value;
                 var method = "03";
-                var effectiveDate = "2020-07-15";
-                var referenceNumber = "TTccc0001";
+                var effectiveDate = document.getElementById("Effective Date").value;;
+                // var referenceNumber = "TTccc0001";
 
                 var link = url + "frequency=" + frequency + "&amount=" + amount
                     + "&maximumFrequency=" + maximumFrequency + "&purposeOfPayment=" + purposeOfPayment
                     + "&businessModel=" + businessModel + "&name=" + name + "&method=" + method
                     + "&emailAddress=" + emailAddress + "&idType=" + idType
                     + "&idValue=" + idValue + "&bankId=" + bankId
-                    + "&merchantId=" + this.state.merchantId + "&employeeId=" + this.state.employeeId + "&effectiveDate=" + effectiveDate + "&referenceNumber=" + referenceNumber;
+                    + "&merchantId=" + this.state.merchantId + "&employeeId=" + this.state.employeeId + "&effectiveDate=" + effectiveDate
 
                 window.location.href = link;
             }
@@ -258,7 +287,8 @@ class MainPage extends React.Component {
         var formName = datas[0];
         var index = datas[1];
         var link = window.location.href.split('/');
-        link[6] = formName;
+        console.log("handleUpdateForm() link: ", link)
+        link[8] = formName;
         this.setState({
             formName: formName,
             currIndex: index,
@@ -270,15 +300,15 @@ class MainPage extends React.Component {
             employeeId: this.state.savedForms[index]['newForm'][formName]['employeeId'],
             published: this.state.savedForms[index]['newForm'][formName]['published']
         }, function () {
-            link[5] = this.state.savedForms[index]['newForm'][formName]['formType'];
+            link[7] = this.state.savedForms[index]['newForm'][formName]['formType'];
             this.setState({ link: link.join('/') });
             // Sets url to appropriate form name
             window.history.pushState(formName, 'title', link.join('/'));
 
-            if (link[5].toLowerCase() === "instant") {
+            if (link[7].toLowerCase() === "instant") {
                 document.getElementById('submitInstant').style.display = "block";
                 document.getElementById('submitMandate').style.display = "none";
-            } else if (link[5].toLowerCase() === "mandate") {
+            } else if (link[7].toLowerCase() === "mandate") {
                 document.getElementById('submitMandate').style.display = "block";
                 document.getElementById('submitInstant').style.display = "none";
             }
@@ -296,48 +326,58 @@ class MainPage extends React.Component {
     render() {
 
         return (
+
             <div>
-                {// Show saved forms if admin mode
-                    (this.state.adminMode) ?
-                        <div id="leftAllign">
-                            <label htmlFor="savedForms">Saved Forms</label>
+                {
+                    (this.state.curlecAdmin) ?
+                        <CurlecAdmin></CurlecAdmin>
+                        :
+                        <div>
+                            {
+                                // Show saved forms if admin mode
+                                (this.state.adminMode) ?
+                                    <div id="leftAllign">
+                                        <label htmlFor="savedForms" id="savedFormsHeader">Saved Forms</label>
+                                        <br />
+                                        <select id="savedForms" required
+                                            onChange={() => this.handleUpdateForm(document.getElementById('savedForms').value)}>
+                                            {this.state.savedForms.map((form, index) =>
+                                                <option key={index} value={Object.keys(form['newForm']) + '|' + index}>{Object.keys(form['newForm'])}</option>
+                                            )}
+                                        </select>
+                                        <br />
+                                        <CopyLink link={this.state.link}></CopyLink>
+                                        <br />
+                                        <PublishForm savedForms={this.state.savedForms} companyName={this.state.companyName}
+                                            formName={this.state.formName} afterPublish={this.afterPublish} currIndex={this.state.currIndex}></PublishForm>
+                                    </div> :
+                                    null
+                            }
+
+                            {/* <button onClick={() => this.handleGetData("Instant")}>Render Instant Pay Form</button>
+                <button onClick={() => this.handleGetData("Mandate")}>Render Mandate Form</button> */}
                             <br />
-                            <select id="savedForms" required
-                                onChange={() => this.handleUpdateForm(document.getElementById('savedForms').value)}>
-                                {this.state.savedForms.map((form, index) =>
-                                    <option key={index} value={Object.keys(form['newForm']) + '|' + index}>{Object.keys(form['newForm'])}</option>
-                                )}
-                            </select>
+                            {
+                                // Show image if present
+                                (!this.state.image) ? null :
+                                    <img src={this.state.image} style={{ width: "600px", height: "150px", background: "transparent" }} alt="preview" />
+                            }
                             <br />
-                            <CopyLink link={this.state.link}></CopyLink>
-                            <br />
-                            <PublishForm savedForms={this.state.savedForms} companyName={this.state.companyName}
-                                formName={this.state.formName} afterPublish={this.afterPublish} currIndex={this.state.currIndex}></PublishForm>
-                        </div> :
-                        null
+                            <form name="signUp">
+                                <h2 className="form-title">{this.state.formName}</h2>
+                                {this.state.taskIds.map(taskId => (
+                                    <Renderer key={this.state.tasks[taskId]['content']} id={this.state.tasks[taskId]['content']}
+                                        taskId={taskId} Regex={this.state.Regex} task={this.state.tasks[taskId]}
+                                        formType={this.state.formType}></Renderer>
+                                ))}
+                                <br />
+                                <span id="alertMissing" className="errorSpan"></span>
+                                <button id="submitInstant" className="submit" onClick={this.handleSubmitInstant}>Submit</button>
+                                <button id="submitMandate" className="submit" onClick={this.handleSubmitMandate}>Submit</button>
+                            </form>
+                        </div>
                 }
 
-                {/* <button onClick={() => this.handleGetData("Instant")}>Render Instant Pay Form</button>
-                <button onClick={() => this.handleGetData("Mandate")}>Render Mandate Form</button> */}
-                <br />
-                {
-                    // Show image if present
-                    (!this.state.img) ? null :
-                        <img src={this.state.image} style={{ width: "600px", height: "150px", background: "transparent" }} alt="preview" />
-                }
-                <br />
-                <form name="signUp">
-                    <h2 className="form-title">{this.state.formName}</h2>
-                    {this.state.taskIds.map(taskId => (
-                        <Renderer key={this.state.tasks[taskId]['content']} id={this.state.tasks[taskId]['content']}
-                            taskId={taskId} Regex={this.state.Regex} task={this.state.tasks[taskId]}
-                            formType={this.state.formType}></Renderer>
-                    ))}
-                    <br />
-                    <span id="alertMissing" className="errorSpan"></span>
-                    <button id="submitInstant" className="submit" onClick={this.handleSubmitInstant}>Submit</button>
-                    <button id="submitMandate" className="submit" onClick={this.handleSubmitMandate}>Submit</button>
-                </form>
             </div >
         );
     }

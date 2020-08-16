@@ -60,7 +60,6 @@ export default function Renderer({ task, Regex, taskId, formType }) {
 
     const checkList = (Id, e) => {
         var val = document.getElementById(Id).value;
-        console.log(val)
         var alertId = combineId(Id);
         if (val) {
             document.getElementById(alertId).innerHTML = '';
@@ -85,6 +84,7 @@ export default function Renderer({ task, Regex, taskId, formType }) {
     } else if (task.inputField === 'Checkbox') {
         return (
             <div>
+                <br />
                 <input type="checkbox" id={task.content} value="checkboxVal" className="checkbox" />
                 &ensp;
                 <label htmlFor={task.content} className='item-title' >{task.content}</label>
@@ -94,7 +94,8 @@ export default function Renderer({ task, Regex, taskId, formType }) {
     } else if (task.inputField === 'DropDownList') {
         return (
             <div>
-                {/* <label htmlFor={task.content} className='item-title'>{task.content}*</label> */}
+                <br />
+                <label htmlFor={task.content} className='item-title'>{task.content}*</label>
                 <br />
                 <select id={task.content} name={task.content} className="fieldSelectBox" required>
                     {task.listValues.map((value) =>
@@ -117,7 +118,7 @@ export default function Renderer({ task, Regex, taskId, formType }) {
                 <span id={combineId(task.content)} className="errorSpan"></span>
                 <script type="text/javascript">
                     {
-                        (formType != "") ?
+                        (formType !== "") ?
                             loadBanks(task.content) : null
                     }</script>
             </div>
